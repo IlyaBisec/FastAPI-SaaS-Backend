@@ -8,8 +8,5 @@ python-jose[cryptography]
 passlib[bcrypt]
 pydantic
 pydantic-settings
-redis
 python-multipart
 email-validator
-pytest
-httpx
