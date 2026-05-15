@@ -6,14 +6,18 @@
 from fastapi import FastAPI
 
 from fsbsrc.api.v1.auth import router as auth_router
-from fsbsrc.api.v1.tasks import router as tasks_router
+
 
 app = FastAPI(
     title="FastAPI SaaS Backend",
-    description="FastAPI SaaS Backend",
-    version="1.0.0",
 )
 
 
 app.include_router(auth_router)
-app.include_router(tasks_router)
+
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Backend running",
+    }
