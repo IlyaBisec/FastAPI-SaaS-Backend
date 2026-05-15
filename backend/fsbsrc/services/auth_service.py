@@ -6,39 +6,69 @@
 # - token creation
 # 13.05.2026 (c) ilya_bisec
 
-from fsbsrc.core.security import create_access_token
-from fsbsrc.core.security import hash_password
-from fsbsrc.core.security import verify_password
+from fastapi import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from fsbsrc.core.security import (
+    create_access_token,
+    hash_password,
+    verify_password,
+)
+
 from fsbsrc.models.user import User
 from fsbsrc.repositories.user_repository import UserRepository
+from fsbsrc.schemas.auth import RegisterRequest, LoginRequest
 
 
 class AuthService:
-    def __init__(self, repository: UserRepository):
-        self.repository = repository
+    """
+    Handles authentication business logic.
+    """
 
-    async def register(self, email: str, password: str):
+    def init(self, db: AsyncSession):
+        self.user_repo = UserRepository(db)
+
+    async def register(self, data: RegisterRequest):
+        existing_user = await self.user_repo.get_by_email(data.email)
+
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="User already exists",
+            )
+
         user = User(
-            email=email,
-            hashed_password=hash_password(password),
+            email=data.email,
+            username=data.username,
+            hashed_password=hash_password(data.password),
         )
 
-        return await self.repository.create(user)
+        return await self.user_repo.create(user)
 
-    async def login(self, email: str, password: str):
-        user = await self.repository.get_by_email(email)
+    async def login(self, data: LoginRequest):
+        user = await self.user_repo.get_by_email(data.email)
 
         if not user:
-            return None
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid credentials",
+            )
 
-        if not verify_password(password, user.hashed_password):
-            return None
+        if not verify_password(
+            data.password,
+            user.hashed_password,
+        ):
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid credentials",
+            )
 
-        token = create_access_token(
-            {
-                "sub": str(user.id),
-                "role": user.role,
-            }
-        )
+        token = create_access_token({
+            "sub": user.email,
+            "role": user.role,
+        })
 
-        return token
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+        }
