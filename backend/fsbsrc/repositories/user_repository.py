@@ -9,7 +9,11 @@ from fsbsrc.models.user import User
 
 
 class UserRepository:
-    def __init__(self, db: AsyncSession):
+    """
+    Handles user database operations.
+    """
+
+    def init(self, db: AsyncSession):
         self.db = db
 
     async def get_by_email(self, email: str):
@@ -21,9 +25,7 @@ class UserRepository:
 
     async def create(self, user: User):
         self.db.add(user)
-
         await self.db.commit()
-
         await self.db.refresh(user)
 
         return user
