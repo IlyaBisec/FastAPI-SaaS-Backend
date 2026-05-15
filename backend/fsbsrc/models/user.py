@@ -6,35 +6,59 @@
 # 13.05.2026 (c) ilya_bisec
 
 from datetime import datetime
-from enum import Enum
+from uuid import uuid4
 
 from sqlalchemy import String
+from sqlalchemy import Boolean
+from sqlalchemy import DateTime
+
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
 from fsbsrc.core.database import Base
 
-class UserRole(str, Enum):
-    ADMIN = "admin"
-    MANAGER = "manager"
-    USER = "user"
-
 
 class User(Base):
+    """
+    User ORM model.
+    """
+
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[str] = mapped_column(
+        String,
+        primary_key=True,
+        default=lambda: str(uuid4()),
+    )
 
     email: Mapped[str] = mapped_column(
         String,
         unique=True,
-        index=True,
+        nullable=False,
     )
 
-    hashed_password: Mapped[str]
+    username: Mapped[str] = mapped_column(
+        String,
+        unique=True,
+        nullable=False,
+    )
 
-    role: Mapped[str] = mapped_column(default=UserRole.USER)
+    hashed_password: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+    )
 
-    is_active: Mapped[bool] = mapped_column(default=True)
+    role: Mapped[str] = mapped_column(
+        String,
+        default="user",
+    )
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+    )
