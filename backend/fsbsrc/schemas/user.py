@@ -3,20 +3,19 @@
 # Supports status, priority, assignment.
 # 13.05.2026 (c) ilya_bisec
 
-from pydantic import BaseModel
-from pydantic import EmailStr
+from pydantic import BaseModel, EmailStr
 
 
 class UserCreate(BaseModel):
     email: EmailStr
+    username: str
     password: str
 
 
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
-    role: str
+    username: str
 
-    model_config = {
-        "from_attributes": True
-    }
+    class Config:
+        from_attributes = True
