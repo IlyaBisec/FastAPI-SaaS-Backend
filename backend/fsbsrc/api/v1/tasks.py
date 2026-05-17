@@ -5,9 +5,9 @@
 # - pagination
 # 13.05.2026 (c) ilya_bisec
 
-from fastapi import APIRouter
-from fastapi import Query
+from typing import Optional
 
+from fastapi import APIRouter, Query
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 async def get_tasks(
     page: int = Query(1, ge=1),
     limit: int = Query(10, le=100),
-    status: str | None = None,
+    status: Optional[str] = None,
 ):
     return {
         "page": page,
